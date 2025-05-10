@@ -1,32 +1,47 @@
 import torch.optim as optim
-import itertools
 from eval import evaluate
 from train import train
 
-def run_grid_search(train_loader, val_loader, model_fn, criterion, device):
-    lr_list = [0.01, 0.001]
-    momentum_list = [0.9, 0.95]
-    T_max_list = [10, 30]
+def run_grid_search(train_loader, val_loader, model_fn, criterion, configs, device):
     best_acc = 0
     best_cfg = None
-    best_model_state = None
+    results = {'lr': [], 'momentum': [], 'val_loss': [], 'val_acc': []}
 
-    for lr, momentum, T_max in itertools.product(lr_list, momentum_list, T_max_list):
+    for cfg in configs:
         model = model_fn(device)
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=T_max)
+        optimizer = optim.SGD(model.parameters(), lr=cfg['lr'], momentum=cfg['momentum'])
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5)
 
-        print(f"Training with lr={lr}, momentum={momentum}, T_max={T_max}...")
+        best_loss = float('inf')
+        patience_counter = 0
+
+        print(f"Training with lr={cfg['lr']}, momentum={cfg['momentum']}...")
         for epoch in range(5):  # Small number of epochs for quick grid search
             train(model, train_loader, optimizer, criterion, device)
-            _, val_acc = evaluate(model, val_loader, criterion, device)
+            val_loss, val_acc = evaluate(model, val_loader, criterion, device)
             scheduler.step()
+            
+            print(f"  Epoch {epoch+1}: Val Loss = {val_loss:.4f}, Val Acc = {val_acc:.4f}")
+            
+            if val_loss < best_loss - 1e-2:
+                best_loss = val_loss
+                patience_counter = 0
+            else:
+                patience_counter += 1
 
-        print(f"Validation accuracy: {val_acc:.4f}")
+            if patience_counter >= 3:
+                print("  Early stopping")
+                break
+
+        results['lr'].append(cfg['lr'])
+        results['momentum'].append(cfg['momentum'])
+        results['val_loss'].append(val_loss)
+        results['val_acc'].append(val_acc)
+
         if val_acc > best_acc:
             best_acc = val_acc
-            best_cfg = (lr, momentum, T_max)
-            best_model_state = model.state_dict()
+            best_cfg = cfg
 
-    print(f"Best val acc: {best_acc:.4f} with lr={best_cfg[0]}, momentum={best_cfg[1]}, T_max={best_cfg[2]}")
-    return best_cfg, best_model_state
+
+    print(f"Best val acc: {best_acc:.4f} with lr={best_cfg['lr']}, momentum={best_cfg['momentum']}")
+    return best_cfg, results
