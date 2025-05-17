@@ -9,7 +9,7 @@ def get_frozen_dino_vits16_model(device, num_classes=100):
 
     # Freeze all base model parameters
     for param in base_model.parameters():
-        param.requires_grad = False
+        param.requires_grad = False # freeza parametri 
 
     # Compose full model with additional classification head
     class DinoClassifier(nn.Module):

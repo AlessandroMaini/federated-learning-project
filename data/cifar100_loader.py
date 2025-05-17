@@ -23,4 +23,4 @@ def get_cifar100_loaders(batch_size=256, val_split=0.1):
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, train_dataset, test_dataset
