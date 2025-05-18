@@ -24,12 +24,12 @@ def averaging(clients_dataloaders, cardinality_dataloaders, model, optimizer, de
 
     trainable_keys = get_trainable_keys(model)
 
+
+    # Calcola la media pesata del parametro
     for key in trainable_keys:
-        # Calcola la media pesata del parametro
-        for key in trainable_keys:
-            avg_param = sum(local_states[i][key] * weights[i] for i in range(len(local_states)))
-            current_state[key] = avg_param
+        avg_param = sum(local_states[i][key] * weights[i] for i in range(10))
+        current_state[key] = avg_param
   
-        model.load_state_dict(current_state)
+    model.load_state_dict(current_state)
 
   
