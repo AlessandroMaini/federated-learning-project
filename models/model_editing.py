@@ -46,7 +46,7 @@ def fischer_scores(model, dataloader, device, R=1, mask=None, N=1, num_classes=1
 
     return scores
 
-def mask_calculator(model, dataset, device, rounds=4, sparsity=0.1, R=1, samples_per_class=1, num_classes=100, verbose=True):
+def mask_calculator(model, dataset, device, rounds=4, sparsity=0.1, R=1, samples_per_class=5, num_classes=100, verbose=True):
     model_copy = copy.deepcopy(model).to(device)
     model_copy.eval()
 
