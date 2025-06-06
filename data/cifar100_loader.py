@@ -11,6 +11,9 @@ import os
 import pickle
 import numpy as np
 
+import kagglehub
+import shutil
+
 class TransformedDataset(Dataset):
     def __init__(self, dataset, transform):
         self.dataset = dataset
@@ -39,7 +42,30 @@ def get_cifar100_loaders(batch_size=64, val_split=0.1):
     ])
 
     # Load dataset without transforms
-    full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
+    # full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
+    # test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
+
+    
+    path = kagglehub.dataset_download("fedesoriano/cifar100", download_dir="./dataset")
+    # Move inner folder to expected torchvision path
+    torchvision_compatible_path = "./dataset/cifar-100-python"
+    if not os.path.exists(torchvision_compatible_path):
+        shutil.move(os.path.join(path, "cifar-100-python"), torchvision_compatible_path)
+
+    full_train_dataset = datasets.CIFAR100(
+        root='./dataset',
+        train=True,
+        download=False,
+        transform=None
+    )
+
+    test_dataset = datasets.CIFAR100(
+        root='./dataset',
+        train=False,
+        download=False,
+        transform=transform_test
+    )
+
     val_size = int(len(full_train_dataset) * val_split)
     train_size = len(full_train_dataset) - val_size
     train_subset, val_subset = random_split(full_train_dataset, [train_size, val_size])
@@ -47,8 +73,6 @@ def get_cifar100_loaders(batch_size=64, val_split=0.1):
     # Wrap subsets with appropriate transforms
     train_dataset = TransformedDataset(train_subset, transform_train)
     val_dataset = TransformedDataset(val_subset, transform_test)
-
-    test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, pin_memory=True)
