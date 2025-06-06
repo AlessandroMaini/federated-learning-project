@@ -108,8 +108,29 @@ def get_federated_cifar100_dataloaders(
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276]),
     ])
-    full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
-    test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
+    
+    # full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
+    # test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
+
+    path = kagglehub.dataset_download("fedesoriano/cifar100", download_dir="./dataset")
+    # Move inner folder to expected torchvision path
+    torchvision_compatible_path = "./dataset/cifar-100-python"
+    if not os.path.exists(torchvision_compatible_path):
+        shutil.move(os.path.join(path, "cifar-100-python"), torchvision_compatible_path)
+
+    full_train_dataset = datasets.CIFAR100(
+        root='./dataset',
+        train=True,
+        download=False,
+        transform=None
+    )
+
+    test_dataset = datasets.CIFAR100(
+        root='./dataset',
+        train=False,
+        download=False,
+        transform=transform_test
+    )       
 
     val_size = int(len(full_train_dataset) * val_split)
     train_size = len(full_train_dataset) - val_size
