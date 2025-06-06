@@ -44,27 +44,20 @@ def get_cifar100_loaders(batch_size=64, val_split=0.1):
     # Load dataset without transforms
     # full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
     # test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
-
     
-    path = kagglehub.dataset_download("fedesoriano/cifar100", download_dir="./dataset")
-    # Move inner folder to expected torchvision path
-    torchvision_compatible_path = "./dataset/cifar-100-python"
-    if not os.path.exists(torchvision_compatible_path):
-        shutil.move(os.path.join(path, "cifar-100-python"), torchvision_compatible_path)
+    # Source and target
+    src = kagglehub.dataset_download("fedesoriano/cifar100")    # Move inner folder to expected torchvision path
+    dst = "./dataset/cifar-100-python"
 
-    full_train_dataset = datasets.CIFAR100(
-        root='./dataset',
-        train=True,
-        download=False,
-        transform=None
-    )
+    # Move if not already moved
+    if not os.path.exists(dst):
+        shutil.copytree(src, dst)
+        print(f"Moved CIFAR-100 data to: {dst}")
+    else:
+        print(f"{dst} already exists.")
 
-    test_dataset = datasets.CIFAR100(
-        root='./dataset',
-        train=False,
-        download=False,
-        transform=transform_test
-    )
+    full_train_dataset = datasets.CIFAR100(root="./dataset", train=True, download=False, transform=None)
+    test_dataset = datasets.CIFAR100(root="./dataset", train=False, download=False, transform=transform_test)
 
     val_size = int(len(full_train_dataset) * val_split)
     train_size = len(full_train_dataset) - val_size
@@ -111,26 +104,20 @@ def get_federated_cifar100_dataloaders(
     
     # full_train_dataset = datasets.CIFAR100(root='./dataset', train=True, download=True, transform=None)
     # test_dataset = datasets.CIFAR100(root='./dataset', train=False, download=True, transform=transform_test)
+    
+    # Source and target
+    src = kagglehub.dataset_download("fedesoriano/cifar100")    # Move inner folder to expected torchvision path
+    dst = "./dataset/cifar-100-python"
 
-    path = kagglehub.dataset_download("fedesoriano/cifar100", download_dir="./dataset")
-    # Move inner folder to expected torchvision path
-    torchvision_compatible_path = "./dataset/cifar-100-python"
-    if not os.path.exists(torchvision_compatible_path):
-        shutil.move(os.path.join(path, "cifar-100-python"), torchvision_compatible_path)
+    # Move if not already moved
+    if not os.path.exists(dst):
+        shutil.copytree(src, dst)
+        print(f"Moved CIFAR-100 data to: {dst}")
+    else:
+        print(f"{dst} already exists.")
 
-    full_train_dataset = datasets.CIFAR100(
-        root='./dataset',
-        train=True,
-        download=False,
-        transform=None
-    )
-
-    test_dataset = datasets.CIFAR100(
-        root='./dataset',
-        train=False,
-        download=False,
-        transform=transform_test
-    )       
+    full_train_dataset = datasets.CIFAR100(root="./dataset", train=True, download=False, transform=None)
+    test_dataset = datasets.CIFAR100(root="./dataset", train=False, download=False, transform=transform_test)    
 
     val_size = int(len(full_train_dataset) * val_split)
     train_size = len(full_train_dataset) - val_size
